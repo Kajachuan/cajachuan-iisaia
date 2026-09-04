@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Registro v0.0.2b (Aduana Arcade Edition)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      border-radius: 0 !important;
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      background-color: #c0c0c0;
+      color: #000000;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .app-container {
+      max-width: 920px;
+      margin: 0 auto;
+      background: #dfdfdf;
+      border: 4px solid #000000;
+      box-shadow: 10px 10px 0px #404040;
+      padding: 16px;
+    }
+
+    header {
+      background: #000080;
+      color: #ffffff;
+      padding: 12px;
+      border: 3px outset #ffffff;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .progress-banner {
+      background: #ffff00;
+      color: #ff0000;
+      font-weight: bold;
+      padding: 4px 8px;
+      display: inline-block;
+      border: 2px solid #000000;
+    }
+
+    footer {
+      margin-top: 24px;
+      padding: 10px;
+      background: #808080;
+      color: #ffffff;
+      border: 3px inset #ffffff;
+      text-align: center;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .field-card {
+      background: #d4d0c8;
+      border: 3px outset #ffffff;
+      padding: 14px;
+      margin-bottom: 18px;
+      box-shadow: 4px 4px 0px #808080;
+    }
+
+    .field-card h2 {
+      font-size: 15px;
+      margin: 0 0 10px 0;
+      background: #800000;
+      color: #ffffff;
+      padding: 4px 8px;
+      text-transform: uppercase;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: #222222;
+      margin-bottom: 10px;
+      background: #e6e6a8;
+      padding: 6px;
+      border: 1px dashed #000000;
+    }
+
+    .error-box {
+      display: none;
+      background: #ff0000;
+      color: #ffffff;
+      font-weight: bold;
+      padding: 6px;
+      border: 2px solid #000000;
+      margin-top: 8px;
+      text-transform: uppercase;
+      animation: blink 1s infinite alternate;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
+
+    button {
+      background: #c0c0c0;
+      border: 3px outset #ffffff;
+      color: #000000;
+      font-weight: bold;
+      font-size: 13px;
+      padding: 6px 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    button:active:not(:disabled) {
+      border: 3px inset #ffffff;
+      background: #a0a0a0;
+    }
+
+    button:disabled {
+      color: #777777;
+      border: 3px outset #cccccc;
+      cursor: not-allowed;
+      background: #b0b0b0;
+    }
+
+    .btn-action-primary {
+      background: #008000;
+      color: #ffffff;
+      font-size: 16px;
+      padding: 12px 20px;
+      width: 100%;
+      border: 4px outset #ffffff;
+    }
+
+    .btn-action-primary:hover:not(:disabled) {
+      background: #00aa00;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 3px inset #808080;
+      font-size: 14px;
+      background: #ffffff;
+    }
+
+    /* MORSE PAD */
+    .morse-pad {
+      background: #000000;
+      color: #00ff00;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 4px inset #404040;
+      user-select: none;
+      text-align: center;
+    }
+
+    .morse-pad.active {
+      background: #330000;
+      color: #ffff00;
+      box-shadow: inset 0 0 15px #ff0000;
+    }
+
+    .morse-live-meter {
+      height: 10px;
+      width: 100%;
+      background: #333333;
+      margin-top: 6px;
+      border: 1px solid #000000;
+    }
+
+    .morse-live-fill {
+      height: 100%;
+      width: 0%;
+      background: #00ff00;
+    }
+
+    .morse-readout {
+      background: #ffffff;
+      border: 2px inset #000000;
+      padding: 8px;
+      margin: 8px 0;
+      font-weight: bold;
+    }
+
+    .morse-table-container {
+      margin-top: 8px;
+      background: #ffffff;
+      border: 2px solid #000000;
+      max-height: 140px;
+      overflow-y: scroll;
+      padding: 6px;
+      font-size: 11px;
+      display: none;
+    }
+
+    .morse-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+    }
+
+    /* SLOTS */
+    .slots-wrapper {
+      background: #303030;
+      border: 4px inset #808080;
+      padding: 12px;
+      display: flex;
+      justify-content: space-around;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .slot-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 31%;
+    }
+
+    .slot-box {
+      width: 100%;
+      height: 60px;
+      background: #ffffff;
+      border: 3px inset #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #000080;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .slot-column button {
+      width: 100%;
+      padding: 8px 2px;
+    }
+
+    .slot-master-bar {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    /* =========================================
+       MÁQUINA DE GARRA: ADUANA INTERNACIONAL
+       ========================================= */
+    .claw-machine {
+      background: #2b2b2b;
+      border: 6px outset #dfdfdf;
+      padding: 10px;
+      box-shadow: 6px 6px 0px #000000;
+      position: relative;
+    }
+
+    .arcade-header-bar {
+      background: #800080;
+      border: 3px inset #ffffff;
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffffff;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .arcade-signs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .arcade-tag {
+      background: #ffff00;
+      color: #000000;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border: 2px solid #000000;
+    }
+
+    .arcade-tag.danger {
+      background: #ff0000;
+      color: #ffffff;
+    }
+
+    /* Ventana visible de la garra (5 columnas x 4 filas = 500px x 360px) */
+    .claw-viewport {
+      width: 100%;
+      max-width: 500px;
+      height: 360px;
+      margin: 0 auto;
+      overflow: hidden;
+      position: relative;
+      background: #001122;
+      border: 5px inset #000000;
+      box-shadow: inset 0 0 20px #000000;
+    }
+
+    .claw-world-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: grid;
+      grid-template-columns: repeat(15, 100px);
+      grid-auto-rows: 90px;
+      transition: transform 180ms steps(4, end);
+    }
+
+    .luggage-cell {
+      width: 100px;
+      height: 90px;
+      border: 1px solid #1a334d;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0d2238;
+      color: #ffffff;
+      text-align: center;
+      position: relative;
+      user-select: none;
+    }
+
+    .luggage-cell.under-claw {
+      border: 2px dashed #ffff00;
+      background: #254a70;
+      box-shadow: inset 0 0 10px #ffff00;
+    }
+
+    .luggage-flag {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .luggage-name {
+      font-size: 10px;
+      line-height: 1.1;
+      margin-top: 3px;
+      max-height: 24px;
+      overflow: hidden;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    .luggage-iso {
+      font-size: 9px;
+      background: #000000;
+      color: #00ff00;
+      padding: 1px 4px;
+      margin-top: 2px;
+      border: 1px solid #333333;
+    }
+
+    .luggage-cell.empty {
+      background: #08111a;
+      opacity: 0.3;
+    }
+
+    /* La Garra Mecánica (DOM) */
+    .claw-rig {
+      position: absolute;
+      pointer-events: none;
+      z-index: 20;
+      width: 100px;
+      height: 90px;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 180ms steps(4, end);
+    }
+
+    .claw-cable {
+      width: 4px;
+      height: 35px;
+      background: #ffff00;
+      border-left: 1px solid #000000;
+      border-right: 1px solid #000000;
+      transition: height 700ms ease-in-out;
+    }
+
+    .claw-head {
+      width: 50px;
+      height: 14px;
+      background: #808080;
+      border: 2px solid #000000;
+      position: relative;
+    }
+
+    .claw-pincers {
+      width: 60px;
+      height: 20px;
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      top: -2px;
+    }
+
+    .claw-finger {
+      width: 8px;
+      height: 22px;
+      background: #a0a0a0;
+      border: 2px solid #000000;
+      transition: transform 200ms;
+    }
+
+    .claw-finger.left {
+      transform: rotate(-25deg);
+      transform-origin: top center;
+    }
+
+    .claw-finger.right {
+      transform: rotate(25deg);
+      transform-origin: top center;
+    }
+
+    .claw-rig.grabbing .claw-finger.left {
+      transform: rotate(10deg);
+    }
+
+    .claw-rig.grabbing .claw-finger.right {
+      transform: rotate(-10deg);
+    }
+
+    /* FX Textual Mecánico */
+    .fx-text-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: #000000;
+      color: #ffff00;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border: 2px solid #ffffff;
+      display: none;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    /* Shake al fallar */
+    .claw-machine.machine-shake {
+      animation: shakeAnim 0.3s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shakeAnim {
+      10%, 90% { transform: translate3d(-3px, 0, 0); }
+      20%, 80% { transform: translate3d(5px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
+
+    /* Panel de controles Arcade */
+    .arcade-controls-pad {
+      background: #404040;
+      border: 4px inset #808080;
+      padding: 12px;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dpad-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .btn-arcade {
+      min-width: 60px;
+      height: 48px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #b0b0b0;
+      border: 4px outset #ffffff;
+    }
+
+    .btn-arcade-drop {
+      min-width: 160px;
+      background: #ffcc00;
+      color: #000000;
+      font-weight: 900;
+      font-size: 15px;
+      border: 4px outset #ffffff;
+    }
+
+    .radar-console {
+      background: #002200;
+      color: #00ff00;
+      border: 2px solid #00aa00;
+      padding: 8px;
+      margin-top: 8px;
+      font-size: 11px;
+      min-height: 45px;
+    }
+
+    /* INSPECCIÓN ADUANERA (MODAL DE CAPTURA) */
+    .inspection-curtain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .inspection-card {
+      background: #000080;
+      color: #ffffff;
+      border: 6px outset #ffffff;
+      padding: 20px;
+      max-width: 440px;
+      text-align: center;
+      box-shadow: 12px 12px 0px #000000;
+    }
+
+    .inspection-card h3 {
+      background: #ffcc00;
+      color: #000000;
+      margin: 0 0 12px 0;
+      padding: 6px;
+      font-size: 16px;
+    }
+
+    /* STEP 2: TERMS */
+    .terms-status-panel {
+      background: #000000;
+      color: #00ff00;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      border: 3px inset #808080;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .terms-box {
+      height: 300px;
+      background: #ffffff;
+      border: 4px inset #404040;
+      overflow-y: scroll;
+      padding: 16px;
+      text-align: justify;
+      position: relative;
+    }
+
+    .terms-box h3 {
+      font-size: 13px;
+      background: #f0f0f0;
+      border-bottom: 2px solid #000000;
+      margin: 18px 0 6px 0;
+      padding: 2px;
+    }
+
+    .terms-box p {
+      font-size: 12px;
+      margin: 0 0 10px 0;
+      color: #333333;
+    }
+
+    /* MODAL CASTIGO POR SCROLL */
+    .modal-curtain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal-dialog {
+      background: #ff0000;
+      color: #ffffff;
+      border: 6px outset #ffffff;
+      box-shadow: 15px 15px 0px #000000;
+      padding: 24px;
+      max-width: 480px;
+      text-align: center;
+    }
+
+    .modal-dialog h2 {
+      margin: 0 0 12px 0;
+      font-size: 22px;
+      text-transform: uppercase;
+      background: #000000;
+      padding: 6px;
+    }
+
+    .modal-dialog p {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* CONFIRMACIÓN */
+    .receipt-box {
+      background: #ffffd0;
+      border: 3px dashed #000000;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .receipt-box ul {
+      list-style: square;
+      padding-left: 20px;
+    }
+
+    .receipt-box li {
+      margin-bottom: 8px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <h1>Registro de Usuario v0.0.2b</h1>
+    <div id="stepProgressIndicator" class="progress-banner">
+      Paso 1 de 2: Datos personales
+    </div>
+  </header>
+
+  <main>
+    <!-- PANTALLA 1: DATOS PERSONALES -->
+    <section id="screenStep1">
+      <div class="field-card">
+        <h2>1. Identificador Nominal (Usuario)</h2>
+        <div class="field-hint">Campo tradicional de texto. Mínimo 3 caracteres alfanuméricos obligatorios.</div>
+        <input type="text" id="txtUsername" placeholder="Ingrese su nombre de usuario aquí..." autocomplete="off">
+        <div id="usernameFeedback" class="error-box">Debe tener al menos 3 caracteres válidos.</div>
+      </div>
+
+      <div class="field-card">
+        <h2>2. Transmisor Morse Criptográfico (Contraseña)</h2>
+        <div class="field-hint">
+          <strong>Instrucciones:</strong> Presione y mantenga el botón en el área o use la <strong>Barra Espaciadora</strong>.<br>
+          Punto (.) = Menos de 250 ms | Raya (-) = Más de 250 ms.<br>
+          Pausa sin pulsar de 700 ms = Convierte señal a letra. Mínimo 6 caracteres requeridos.
+        </div>
+
+        <div id="morseTransmissionPad" class="morse-pad" tabindex="0">
+          <div id="morsePadPrompt" style="font-size: 16px; font-weight: bold;">[ MANTENGA PRESIONADO AQUÍ O BARRA ESPACIADORA ]</div>
+          <div id="morseHoldDuration" style="font-size: 12px; margin-top: 4px;">Tiempo de pulsación: 0 ms</div>
+          <div class="morse-live-meter">
+            <div id="morseMeterFill" class="morse-live-fill"></div>
+          </div>
+        </div>
+
+        <div class="morse-readout">
+          <div>Señal buffer actual: <span id="lblCurrentSignal" style="color: #0000aa;">(vacío)</span></div>
+          <div>Contraseña codificada: <span id="lblMaskedPassword" style="color: #aa0000; letter-spacing: 3px;">(ninguno)</span></div>
+          <div>Longitud acumulada: <span id="lblPasswordLen">0</span> caracteres (Mínimo: 6)</div>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" id="btnDeleteSignal">Borrar última señal</button>
+          <button type="button" id="btnDeleteChar">Borrar último carácter</button>
+          <button type="button" id="btnToggleMorseTable">Ver Alfabeto Morse</button>
+        </div>
+
+        <div id="morseInvalidFeedback" class="error-box">Combinación Morse desconocida. Descartada.</div>
+        <div id="passwordLengthFeedback" class="error-box">La contraseña requiere un mínimo de 6 caracteres.</div>
+
+        <div id="morseTableRef" class="morse-table-container">
+          <div class="morse-grid">
+            <div><strong>A</strong> .-</div><div><strong>B</strong> -...</div><div><strong>C</strong> -.-.</div><div><strong>D</strong> -..</div><div><strong>E</strong> .</div><div><strong>F</strong> ..-.</div>
+            <div><strong>G</strong> --.</div><div><strong>H</strong> ....</div><div><strong>I</strong> ..</div><div><strong>J</strong> .---</div><div><strong>K</strong> -.-</div><div><strong>L</strong> .-..</div>
+            <div><strong>M</strong> --</div><div><strong>N</strong> -.</div><div><strong>O</strong> ---</div><div><strong>P</strong> .--.</div><div><strong>Q</strong> --.-</div><div><strong>R</strong> .-.</div>
+            <div><strong>S</strong> ...</div><div><strong>T</strong> -</div><div><strong>U</strong> ..-</div><div><strong>V</strong> ...-</div><div><strong>W</strong> .--</div><div><strong>X</strong> -..-</div>
+            <div><strong>Y</strong> -.--</div><div><strong>Z</strong> --..</div><div><strong>0</strong> -----</div><div><strong>1</strong> .----</div><div><strong>2</strong> ..---</div><div><strong>3</strong> ...--</div>
+            <div><strong>4</strong> ....-</div><div><strong>5</strong> .....</div><div><strong>6</strong> -....</div><div><strong>7</strong> --...</div><div><strong>8</strong> ---..</div><div><strong>9</strong> ----.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-card">
+        <h2>3. Ruleta de Cronología Natal (Tragamonedas)</h2>
+        <div class="field-hint">Presione "GIRAR". Luego detenga INDIVIDUALMENTE cada rodillo. No se admiten fechas imposibles ni futuras.</div>
+        
+        <div class="slots-wrapper">
+          <div class="slot-column">
+            <span style="color:#ffffff; font-weight:bold; margin-bottom:4px;">DÍA</span>
+            <div id="slotDayVal" class="slot-box">--</div>
+            <button type="button" id="btnStopDay" disabled>DETENER</button>
+          </div>
+          <div class="slot-column">
+            <span style="color:#ffffff; font-weight:bold; margin-bottom:4px;">MES</span>
+            <div id="slotMonthVal" class="slot-box" style="font-size: 15px;">--</div>
+            <button type="button" id="btnStopMonth" disabled>DETENER</button>
+          </div>
+          <div class="slot-column">
+            <span style="color:#ffffff; font-weight:bold; margin-bottom:4px;">AÑO</span>
+            <div id="slotYearVal" class="slot-box">----</div>
+            <button type="button" id="btnStopYear" disabled>DETENER</button>
+          </div>
+        </div>
+
+        <div class="slot-master-bar">
+          <button type="button" id="btnSpinSlots" style="flex: 1; background: #ffff00; font-size: 15px;">🎰 GIRAR RODILLOS</button>
+        </div>
+
+        <div id="slotFeedback" class="error-box">Fecha inválida detectada. Los rodillos se invalidaron. Vuelva a girar.</div>
+      </div>
+
+      <!-- NUEVO 4: MÁQUINA DE GARRA ADUANERA -->
+      <div class="field-card">
+        <h2>4. Aduana Internacional (Selector de País por Garra Mecánica)</h2>
+        <div class="field-hint">
+          <strong>DISPOSICIÓN ADUANERA:</strong> 195 valijas de países soberanos dispersas en el depósito nacional.<br>
+          Mueva la garra usando las flechas de pantalla o el teclado. Alinee el dispositivo y presione <strong>BAJAR GARRA</strong>.
+        </div>
+
+        <div id="clawMachineApp" class="claw-machine">
+          <div class="arcade-header-bar">
+            <span>Aduana Internacional v3.1</span>
+            <span id="lblClawCoords" style="background:#000000; color:#ffff00; padding:2px 6px;">Fila: -- | Columna: --</span>
+          </div>
+
+          <div class="arcade-signs">
+            <div class="arcade-tag">DOCUMENTOS</div>
+            <div class="arcade-tag danger">SOLO PERSONAL AUTORIZADO</div>
+            <div class="arcade-tag">NO GOLPEAR EL VIDRIO</div>
+            <div class="arcade-tag danger">LA ADUANA NO SE RESPONSABILIZA POR PAÍSES EXTRAVIADOS</div>
+          </div>
+
+          <!-- ÁREA VISIBLE (VIEWPORT 5 COLUMNAS X 4 FILAS) -->
+          <div id="clawViewport" class="claw-viewport">
+            <div id="fxTextOverlay" class="fx-text-overlay">CLANK</div>
+            
+            <div id="clawRig" class="claw-rig">
+              <div id="clawCable" class="claw-cable"></div>
+              <div class="claw-head"></div>
+              <div class="claw-pincers">
+                <div class="claw-finger left"></div>
+                <div class="claw-finger right"></div>
+              </div>
+            </div>
+
+            <div id="clawWorldGrid" class="claw-world-grid">
+              <!-- Renderizado dinámico de 195 países -->
+            </div>
+          </div>
+
+          <!-- RADAR ADUANERO -->
+          <div class="radar-console">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong>SONAR RADAR DE BALIZAS CERCANAS:</strong>
+              <button type="button" id="btnConsultRadar" style="background:#00aa00; color:#ffffff; font-size:11px; padding:3px 8px;">
+                CONSULTAR RADAR
+              </button>
+            </div>
+            <div id="radarDisplayMsg">Radar listo para emitir pulso electroacústico.</div>
+          </div>
+
+          <!-- CONTROLES ARCADE -->
+          <div class="arcade-controls-pad">
+            <div class="dpad-row">
+              <button type="button" id="btnClawUp" class="btn-arcade">↑</button>
+            </div>
+            <div class="dpad-row">
+              <button type="button" id="btnClawLeft" class="btn-arcade">←</button>
+              <button type="button" id="btnClawDrop" class="btn-arcade-drop">BAJAR GARRA</button>
+              <button type="button" id="btnClawRight" class="btn-arcade">→</button>
+            </div>
+            <div class="dpad-row">
+              <button type="button" id="btnClawDown" class="btn-arcade">↓</button>
+            </div>
+          </div>
+
+          <div id="clawStatusBanner" style="background:#ffffff; border:2px inset #000000; padding:8px; margin-top:8px; font-weight:bold;">
+            País de nacimiento declarado: <span id="lblSelectedCountry" style="color: #aa0000;">(Ninguno declarado)</span>
+          </div>
+
+          <div id="reopenSection" style="margin-top:8px; display:none;">
+            <button type="button" id="btnReopenBorder" style="background:#ffff00; color:#000000; width:100%;">
+              SOLICITAR REAPERTURA DE FRONTERA (CAMBIAR PAÍS)
+            </button>
+          </div>
+
+          <div id="clawAdminErrorFeedback" class="error-box">La garra perdió el pasaporte por motivos administrativos.</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <button type="button" id="btnContinueToStep2" class="btn-action-primary" disabled>
+          CONTINUAR A TÉRMINOS Y CONDICIONES >>
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 2: TÉRMINOS Y CONDICIONES -->
+    <section id="screenStep2" class="hidden">
+      <div class="field-card">
+        <h2>CONTRATO VINCULANTE DE LICENCIA Y CONDICIONES OPERATIVAS</h2>
+        <div class="field-hint">
+          <strong>AVISO DE LECTURA OBLIGATORIA:</strong> El sistema audita su velocidad de lectura en tiempo real. 
+          Cualquier desplazamiento sospechoso, salto abrupto o aceleración indebida reiniciará el contador por considerarse negligencia procesal.
+        </div>
+
+        <div class="terms-status-panel">
+          <div>TIEMPO TRANSCURRIDO: <span id="lblTermsTimer">0</span> s / min 35 s</div>
+          <div>PORCENTAJE LEÍDO: <span id="lblTermsPercent">0%</span></div>
+          <div>VELOCIDAD ACTUAL: <span id="lblTermsSpeed">0 px/s</span> (Máx 900)</div>
+          <div>ESTADO AUDITORÍA: <span id="lblTermsStatus" style="color: #ffff00;">Leyendo</span></div>
+        </div>
+
+        <div id="termsScrollContainer" class="terms-box">
+          <h3>SECCIÓN 1. OBJETO Y ALCANCE VINCULANTE</h3>
+          <p>El presente documento constituye un contrato de adhesión inexorable y obligatorio entre el Usuario Registrado (en adelante denominado "El Sujeto Procesado") y la Plataforma Matriz Centralizada (en adelante "El Sistema"). Al contemplar este documento, El Sujeto consiente someterse a escrutinios biométricos y cronológicos de atención sostenida.</p>
+          
+          <h3>SECCIÓN 2. MONITOREO DE ACTIVIDAD OCULAR Y VELOCIDAD DE SCROLL</h3>
+          <p>El Sujeto declara bajo juramento implícito que procesará cada párrafo con serenidad meditativa. Los sensores algorítmicos miden la aceleración angular y vertical de su rueda de desplazamiento. Desplazarse sin asimilar las cláusulas constituye una ofensa de baja fe contractual sujeta a retroceso forzoso al punto de origen.</p>
+          
+          <h3>SECCIÓN 3. PROPIEDAD INTELECTUAL DE LOS ERRORES COMETIDOS</h3>
+          <p>Cualquier error tipográfico, titubeo en código Morse o frustración somatizada durante el ingreso al formulario pasará a ser patrimonio intangible de El Sistema, pudiendo ser monetizado, exportado a museos de informática arcaica o reproducido en manuales de mala praxis ergonómica sin retribución alguna.</p>
+          
+          <h3>SECCIÓN 4. MANEJO, DISPERSIÓN Y CONFUSIÓN DE DATOS</h3>
+          <p>Sus datos personales, si bien se preservan en la memoria temporal volátil de este cliente web, quedan sujetos al principio de entropía digital: no garantizamos que su nombre continúe siendo el mismo si la ventana se refresca accidentalmente por impericia de su parte.</p>
+          
+          <h3>SECCIÓN 5. OBLIGACIONES EN CASO DE DESESPERACIÓN</h3>
+          <p>En el caso hipotético de experimentar palpitaciones frente al rodillo de fechas de nacimiento o ante la pérdida de valijas por parte de la garra aduanera, El Sujeto renuncia expresamente a reclamar indemnizaciones por teclados arrojados contra la pared o golpes contundentes sobre el escritorio.</p>
+          
+          <h3>SECCIÓN 6. CLÁUSULA DE USO Y PRESERVACIÓN DE COOKIES</h3>
+          <p>No usamos cookies convencionales. Guardamos migajas etéreas en el éter del DOM. Cualquier intento de inspectores externos de auditar el almacenamiento local será interpretado como sabotaje y acarreará una mirada severa por parte de nuestro consorcio.</p>
+          
+          <h3>SECCIÓN 7. COMUNICACIONES TELEGRÁFICAS Y POSTALES</h3>
+          <p>Toda comunicación oficial de soporte se realizará exclusivamente en frecuencias de radioaficionado en onda corta o mediante el envío de palomas mensajeras previamente entrenadas en la norma ISO-9001.</p>
+          
+          <h3>SECCIÓN 8. SUSPENSIÓN SUMARIA DE CUENTAS VIRTUALES</h3>
+          <p>Nos reservamos el derecho sacrosanto de expulsar a cualquier operador que demuestre una destreza mecanográfica desmedida o que intente utilizar atajos de teclado sin previa autorización notarial.</p>
+          
+          <h3>SECCIÓN 9. RENUNCIA TOTAL A LA VELOCIDAD DE RESPUESTA</h3>
+          <p>El concepto de "inmediatez moderna" queda suspendido en este entorno. Las transacciones se asumen a velocidad de vapor decimonónico.</p>
+          
+          <h3>SECCIÓN 10. MODIFICACIONES UNILATERALES IMPREVISIBLES</h3>
+          <p>El Sistema podrá cambiar el orden del alfabeto Morse, los meses del año o la ubicación de las valijas de aduana en cualquier momento y sin previo aviso, debiendo El Sujeto adaptarse de inmediato a la nueva realidad.</p>
+          
+          <h3>SECCIÓN 11. POLÍTICA DE SEGURIDAD ESTRICTA</h3>
+          <p>Toda contraseña ingresada mediante pulsos telegráficos no podrá ser traducida a texto plano bajo ninguna circunstancia, ni siquiera para recordársela a su dueño. Si la olvida, deberá aprender de nuevo a comunicarse por telégrafo.</p>
+          
+          <h3>SECCIÓN 12. CESIÓN DE DERECHOS DE PACIENCIA</h3>
+          <p>El usuario transfiere formalmente 500 miligramos de paciencia neuronal a los servidores de esta compañía para fines de investigación sobre resiliencia humana en interfaces hostiles.</p>
+          
+          <h3>SECCIÓN 13. JURISDICCIÓN Y LEY APLICABLE</h3>
+          <p>Cualquier controversia legal será litigada en los tribunales arbitrales de la Antártida Oriental, debiendo las partes presentarse con vestimenta polar reglamentaria a su propio costo.</p>
+          
+          <h3>SECCIÓN 14. TOTALIDAD DEL ACUERDO Y SEPARABILIDAD</h3>
+          <p>Si alguna cláusula de este contrato fuese declarada absurda por un juez ordinario, el resto de los artículos conservarán intacta su vocación de perturbar al contratante sin merma de su vigor.</p>
+          
+          <h3>SECCIÓN 15. RATIFICACIÓN DEFINITIVA Y CONFIRMACIÓN</h3>
+          <p>Al llegar al final de este texto tras una lectura pausada y reflexiva de al menos 35 segundos, El Sujeto habrá alcanzado la iluminación cívica necesaria para ser catalogado como Usuario Registrado Definitivo.</p>
+          <div style="height: 60px; text-align: center; color: #888888; padding-top: 20px;">
+            --- FIN DEL CONTRATO LEGAL AUDITADO ---
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; display: flex; gap: 10px;">
+          <button type="button" id="btnBackToStep1" style="background: #e0e0e0;">
+            << VOLVER AL FORMULARIO
+          </button>
+          <button type="button" id="btnAcceptTerms" class="btn-action-primary" style="flex: 1;" disabled>
+            ACEPTAR Y CONFIRMAR REGISTRO
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 3: CONFIRMACIÓN FINAL -->
+    <section id="screenStep3" class="hidden">
+      <div class="field-card" style="background: #ffffff; border: 4px double #008000;">
+        <h2 style="background: #008000;">REGISTRO COMPLETADO CON ÉXITO ABSOLUTO</h2>
+        <p>Ha sorteado con éxito las barreras ergonómicas y superado los estándares de auditoría cognitiva y aduanera.</p>
+
+        <div class="receipt-box">
+          <h3 style="margin-top: 0; text-decoration: underline;">FICHA MAESTRA DEL SUJETO:</h3>
+          <ul>
+            <li><strong>Identificador de Usuario:</strong> <span id="recUsername">---</span></li>
+            <li><strong>Fecha de Nacimiento Validada:</strong> <span id="recBirthDate">---</span></li>
+            <li><strong>País de Origen Certificado:</strong> <span id="recCountry">---</span></li>
+            <li><strong>Contraseña en Bóveda Cripto:</strong> <span id="recPasswordMasked">••••••</span></li>
+          </ul>
+        </div>
+
+        <button type="button" id="btnRestartApp" class="btn-action-primary">
+          REGISTRAR OTRA PERSONA (REINICIAR SISTEMA)
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    ADVERTENCIA: Este proceso fue diseñado pensando en su paciencia. No golpee la pantalla.
+  </footer>
+</div>
+
+<!-- MODAL INSPECCIÓN DE VALIJA -->
+<div id="modalInspection" class="inspection-curtain">
+  <div class="inspection-card">
+    <h3>INSPECCIÓN ADUANERA DE EQUIPAJE</h3>
+    <p id="lblInspectionCaptureText" style="font-size: 16px; font-weight: bold; margin: 15px 0;">
+      La garra capturó: [bandera] [país]. ¿Este es su país de nacimiento?
+    </p>
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button type="button" id="btnConfirmCapturedCountry" style="flex: 1; background: #00aa00; color: #ffffff; padding: 10px;">
+        SÍ, NACÍ AHÍ
+      </button>
+      <button type="button" id="btnRejectCapturedCountry" style="flex: 1; background: #cc0000; color: #ffffff; padding: 10px;">
+        NO, DEVOLVER VALIJA
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CASTIGO POR SCROLL RÁPIDO -->
+<div id="modalTermsViolation" class="modal-curtain">
+  <div class="modal-dialog">
+    <h2>DETECCIÓN DE FRAUDE DE LECTURA</h2>
+    <p>Detectamos que no está leyendo los términos y condiciones.</p>
+    <p style="font-size: 11px; background: #990000; padding: 6px;">
+      Su velocidad o saltos repentinos delatan un comportamiento apurado impropio de un contratante civil responsable.
+    </p>
+    <button type="button" id="btnDismissModal" style="background: #ffffff; color: #000000; font-size: 15px; padding: 10px 20px;">
+      VOLVER A LEER
+    </button>
+  </div>
+</div>
+
+<script>
+  // --- 195 PAÍSES SOBERANOS RECONOCIDOS (ISO-3166-1 alpha-2) ---
+  const COUNTRIES_SOURCE = [
+    { code: "AF", name: "Afganistán" }, { code: "AL", name: "Albania" }, { code: "DE", name: "Alemania" },
+    { code: "AD", name: "Andorra" }, { code: "AO", name: "Angola" }, { code: "AG", name: "Antigua y Barbuda" },
+    { code: "SA", name: "Arabia Saudita" }, { code: "DZ", name: "Argelia" }, { code: "AR", name: "Argentina" },
+    { code: "AM", name: "Armenia" }, { code: "AU", name: "Australia" }, { code: "AT", name: "Austria" },
+    { code: "AZ", name: "Azerbaiyán" }, { code: "BS", name: "Bahamas" }, { code: "BD", name: "Bangladés" },
+    { code: "BB", name: "Barbados" }, { code: "BH", name: "Baréin" }, { code: "BE", name: "Bélgica" },
+    { code: "BZ", name: "Belice" }, { code: "BJ", name: "Benín" }, { code: "BY", name: "Bielorrusia" },
+    { code: "MM", name: "Birmania" }, { code: "BO", name: "Bolivia" }, { code: "BA", name: "Bosnia y Herzegovina" },
+    { code: "BW", name: "Botsuana" }, { code: "BR", name: "Brasil" }, { code: "BN", name: "Brunéi" },
+    { code: "BG", name: "Bulgaria" }, { code: "BF", name: "Burkina Faso" }, { code: "BI", name: "Burundi" },
+    { code: "BT", name: "Bután" }, { code: "CV", name: "Cabo Verde" }, { code: "KH", name: "Camboya" },
+    { code: "CM", name: "Camerún" }, { code: "CA", name: "Canadá" }, { code: "QA", name: "Catar" },
+    { code: "TD", name: "Chad" }, { code: "CL", name: "Chile" }, { code: "CN", name: "China" },
+    { code: "CY", name: "Chipre" }, { code: "VA", name: "Ciudad del Vaticano" }, { code: "CO", name: "Colombia" },
+    { code: "KM", name: "Comoras" }, { code: "KP", name: "Corea del Norte" }, { code: "KR", name: "Corea del Sur" },
+    { code: "CI", name: "Costa de Marfil" }, { code: "CR", name: "Costa Rica" }, { code: "HR", name: "Croacia" },
+    { code: "CU", name: "Cuba" }, { code: "DK", name: "Dinamarca" }, { code: "DM", name: "Dominica" },
+    { code: "EC", name: "Ecuador" }, { code: "EG", name: "Egipto" }, { code: "SV", name: "El Salvador" },
+    { code: "AE", name: "Emiratos Árabes Unidos" }, { code: "ER", name: "Eritrea" }, { code: "SK", name: "Eslovaquia" },
+    { code: "SI", name: "Eslovenia" }, { code: "ES", name: "España" }, { code: "US", name: "Estados Unidos" },
+    { code: "EE", name: "Estonia" }, { code: "SZ", name: "Esuatini" }, { code: "ET", name: "Etiopía" },
+    { code: "PH", name: "Filipinas" }, { code: "FI", name: "Finlandia" }, { code: "FJ", name: "Fiyi" },
+    { code: "FR", name: "Francia" }, { code: "GA", name: "Gabón" }, { code: "GM", name: "Gambia" },
+    { code: "GE", name: "Georgia" }, { code: "GH", name: "Ghana" }, { code: "GD", name: "Granada" },
+    { code: "GR", name: "Grecia" }, { code: "GT", name: "Guatemala" }, { code: "GN", name: "Guinea" },
+    { code: "GW", name: "Guinea-Bisáu" }, { code: "GQ", name: "Guinea Ecuatorial" }, { code: "GY", name: "Guyana" },
+    { code: "HT", name: "Haití" }, { code: "HN", name: "Honduras" }, { code: "HU", name: "Hungría" },
+    { code: "IN", name: "India" }, { code: "ID", name: "Indonesia" }, { code: "IQ", name: "Irak" },
+    { code: "IR", name: "Irán" }, { code: "IE", name: "Irlanda" }, { code: "IS", name: "Islandia" },
+    { code: "IL", name: "Israel" }, { code: "IT", name: "Italia" }, { code: "JM", name: "Jamaica" },
+    { code: "JP", name: "Japón" }, { code: "JO", name: "Jordania" }, { code: "KZ", name: "Kazajistán" },
+    { code: "KE", name: "Kenia" }, { code: "KG", name: "Kirguistán" }, { code: "KI", name: "Kiribati" },
+    { code: "KW", name: "Kuwait" }, { code: "LA", name: "Laos" }, { code: "LS", name: "Lesoto" },
+    { code: "LV", name: "Letonia" }, { code: "LB", name: "Líbano" }, { code: "LR", name: "Liberia" },
+    { code: "LY", name: "Libia" }, { code: "LI", name: "Liechtenstein" }, { code: "LT", name: "Lituania" },
+    { code: "LU", name: "Luxemburgo" }, { code: "MK", name: "Macedonia del Norte" }, { code: "MG", name: "Madagascar" },
+    { code: "MY", name: "Malasia" }, { code: "MW", name: "Malaui" }, { code: "MV", name: "Maldivas" },
+    { code: "ML", name: "Malí" }, { code: "MT", name: "Malta" }, { code: "MA", name: "Marruecos" },
+    { code: "MU", name: "Mauricio" }, { code: "MR", name: "Mauritania" }, { code: "MX", name: "México" },
+    { code: "FM", name: "Micronesia" }, { code: "MD", name: "Moldavia" }, { code: "MC", name: "Mónaco" },
+    { code: "MN", name: "Mongolia" }, { code: "ME", name: "Montenegro" }, { code: "MZ", name: "Mozambique" },
+    { code: "NA", name: "Namibia" }, { code: "NR", name: "Nauru" }, { code: "NP", name: "Nepal" },
+    { code: "NI", name: "Nicaragua" }, { code: "NE", name: "Níger" }, { code: "NG", name: "Nigeria" },
+    { code: "NO", name: "Noruega" }, { code: "NZ", name: "Nueva Zelanda" }, { code: "OM", name: "Omán" },
+    { code: "NL", name: "Países Bajos" }, { code: "PK", name: "Pakistán" }, { code: "PW", name: "Palaos" },
+    { code: "PA", name: "Panamá" }, { code: "PG", name: "Papúa Nueva Guinea" }, { code: "PY", name: "Paraguay" },
+    { code: "PE", name: "Perú" }, { code: "PL", name: "Polonia" }, { code: "PT", name: "Portugal" },
+    { code: "GB", name: "Reino Unido" }, { code: "CF", name: "República Centroafricana" }, { code: "CZ", name: "República Checa" },
+    { code: "CG", name: "República del Congo" }, { code: "CD", name: "República Democrática del Congo" }, { code: "DO", name: "República Dominicana" },
+    { code: "RW", name: "Ruanda" }, { code: "RO", name: "Rumania" }, { code: "RU", name: "Rusia" },
+    { code: "WS", name: "Samoa" }, { code: "KN", name: "San Cristóbal y Nieves" }, { code: "SM", name: "San Marino" },
+    { code: "VC", name: "San Vicente y las Granadinas" }, { code: "LC", name: "Santa Lucía" }, { code: "ST", name: "Santo Tomé y Príncipe" },
+    { code: "SN", name: "Senegal" }, { code: "RS", name: "Serbia" }, { code: "SC", name: "Seychelles" },
+    { code: "SL", name: "Sierra Leona" }, { code: "SG", name: "Singapur" }, { code: "SY", name: "Siria" },
+    { code: "SO", name: "Somalia" }, { code: "LK", name: "Sri Lanka" }, { code: "ZA", name: "Sudáfrica" },
+    { code: "SD", name: "Sudán" }, { code: "SS", name: "Sudán del Sur" }, { code: "SE", name: "Suecia" },
+    { code: "CH", name: "Suiza" }, { code: "SR", name: "Surinam" }, { code: "TH", name: "Tailandia" },
+    { code: "TZ", name: "Tanzania" }, { code: "TJ", name: "Tayikistán" }, { code: "TL", name: "Timor Oriental" },
+    { code: "TG", name: "Togo" }, { code: "TO", name: "Tonga" }, { code: "TT", name: "Trinidad y Tobago" },
+    { code: "TN", name: "Túnez" }, { code: "TM", name: "Turkmenistán" }, { code: "TR", name: "Turquía" },
+    { code: "TV", name: "Tuvalu" }, { code: "UA", name: "Ucrania" }, { code: "UG", name: "Uganda" },
+    { code: "UY", name: "Uruguay" }, { code: "UZ", name: "Uzbekistán" }, { code: "VU", name: "Vanuatu" },
+    { code: "VE", name: "Venezuela" }, { code: "VN", name: "Vietnam" }, { code: "YE", name: "Yemen" },
+    { code: "DJ", name: "Yibuti" }, { code: "ZM", name: "Zambia" }, { code: "ZW", name: "Zimbabue" }
+  ];
+
+  // Función constructora de banderas emoji a partir de código ISO
+  function isoToEmoji(code) {
+    return code.toUpperCase().replace(/./g, char => 
+      String.fromCodePoint(127397 + char.charCodeAt(0))
+    );
+  }
+
+  // Precalculamos bandera en los objetos de países
+  const countries = COUNTRIES_SOURCE.map(c => ({
+    ...c,
+    flag: isoToEmoji(c.code)
+  }));
+
+  // CONFIGURACIÓN DE LA GRILLA ADUANERA
+  const GRID_COLS = 15;
+  const GRID_ROWS = 14; // 15 x 14 = 210 celdas (contiene holgadamente los 195 países)
+  const CELL_WIDTH = 100;
+  const CELL_HEIGHT = 90;
+  const VIEWPORT_WIDTH = 500;
+  const VIEWPORT_HEIGHT = 360;
+
+  // --- ESTADO PRINCIPAL DE LA APLICACIÓN ---
+  const state = {
+    currentStep: 1,
+    username: "",
+    morseSequence: "",
+    password: "",
+    birthDate: { day: null, month: null, year: null },
+    
+    // Variables exigidas para el nuevo selector de garra
+    countries: countries,
+    countryGrid: [],
+    clawRow: 0,
+    clawColumn: 0,
+    clawMoving: false,
+    capturedCountry: null,
+    selectedCountry: null, // Objeto { name, code, flag } o null
+    radarCooldown: false,
+
+    // Auditoría de Términos
+    termsStartTime: null,
+    lastScrollPosition: 0,
+    lastScrollTime: null,
+    maximumReadPosition: 0,
+    readingInvalidated: false,
+    termsAccepted: false
+  };
+
+  const MORSE_DICTIONARY = {
+    ".-": "A", "-...": "B", "-.-.": "C", "-..": "D", ".": "E", "..-.": "F",
+    "--.": "G", "....": "H", "..": "I", ".---": "J", "-.-": "K", ".-..": "L",
+    "--": "M", "-.": "N", "---": "O", ".--.": "P", "--.-": "Q", ".-.": "R",
+    "...": "S", "-": "T", "..-": "U", "...-": "V", ".--": "W", "-..-": "X",
+    "-.--": "Y", "--..": "Z", "-----": "0", ".----": "1", "..---": "2",
+    "...--": "3", "....-": "4", ".....": "5", "-....": "6", "--...": "7",
+    "---..": "8", "----.": "9"
+  };
+
+  const MONTH_NAMES = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+
+  // REFERENCIAS DOM GENERALES
+  const txtUsername = document.getElementById("txtUsername");
+  const usernameFeedback = document.getElementById("usernameFeedback");
+  const stepProgressIndicator = document.getElementById("stepProgressIndicator");
+  const screenStep1 = document.getElementById("screenStep1");
+  const screenStep2 = document.getElementById("screenStep2");
+  const screenStep3 = document.getElementById("screenStep3");
+  const btnContinueToStep2 = document.getElementById("btnContinueToStep2");
+
+  // Morse Elements
+  const morsePad = document.getElementById("morseTransmissionPad");
+  const morseHoldDuration = document.getElementById("morseHoldDuration");
+  const morseMeterFill = document.getElementById("morseMeterFill");
+  const lblCurrentSignal = document.getElementById("lblCurrentSignal");
+  const lblMaskedPassword = document.getElementById("lblMaskedPassword");
+  const lblPasswordLen = document.getElementById("lblPasswordLen");
+  const morseInvalidFeedback = document.getElementById("morseInvalidFeedback");
+  const passwordLengthFeedback = document.getElementById("passwordLengthFeedback");
+  const btnDeleteSignal = document.getElementById("btnDeleteSignal");
+  const btnDeleteChar = document.getElementById("btnDeleteChar");
+  const btnToggleMorseTable = document.getElementById("btnToggleMorseTable");
+  const morseTableRef = document.getElementById("morseTableRef");
+
+  // Slot Elements
+  const slotDayVal = document.getElementById("slotDayVal");
+  const slotMonthVal = document.getElementById("slotMonthVal");
+  const slotYearVal = document.getElementById("slotYearVal");
+  const btnSpinSlots = document.getElementById("btnSpinSlots");
+  const btnStopDay = document.getElementById("btnStopDay");
+  const btnStopMonth = document.getElementById("btnStopMonth");
+  const btnStopYear = document.getElementById("btnStopYear");
+  const slotFeedback = document.getElementById("slotFeedback");
+
+  // Claw Machine DOM Elements
+  const clawMachineApp = document.getElementById("clawMachineApp");
+  const clawViewport = document.getElementById("clawViewport");
+  const clawWorldGrid = document.getElementById("clawWorldGrid");
+  const clawRig = document.getElementById("clawRig");
+  const clawCable = document.getElementById("clawCable");
+  const lblClawCoords = document.getElementById("lblClawCoords");
+  const fxTextOverlay = document.getElementById("fxTextOverlay");
+  const clawAdminErrorFeedback = document.getElementById("clawAdminErrorFeedback");
+  const lblSelectedCountry = document.getElementById("lblSelectedCountry");
+  const reopenSection = document.getElementById("reopenSection");
+  const btnReopenBorder = document.getElementById("btnReopenBorder");
+
+  const btnClawUp = document.getElementById("btnClawUp");
+  const btnClawDown = document.getElementById("btnClawDown");
+  const btnClawLeft = document.getElementById("btnClawLeft");
+  const btnClawRight = document.getElementById("btnClawRight");
+  const btnClawDrop = document.getElementById("btnClawDrop");
+  const btnConsultRadar = document.getElementById("btnConsultRadar");
+  const radarDisplayMsg = document.getElementById("radarDisplayMsg");
+
+  // Modales
+  const modalInspection = document.getElementById("modalInspection");
+  const lblInspectionCaptureText = document.getElementById("lblInspectionCaptureText");
+  const btnConfirmCapturedCountry = document.getElementById("btnConfirmCapturedCountry");
+  const btnRejectCapturedCountry = document.getElementById("btnRejectCapturedCountry");
+
+  // Terms Elements
+  const termsScrollContainer = document.getElementById("termsScrollContainer");
+  const lblTermsTimer = document.getElementById("lblTermsTimer");
+  const lblTermsPercent = document.getElementById("lblTermsPercent");
+  const lblTermsSpeed = document.getElementById("lblTermsSpeed");
+  const lblTermsStatus = document.getElementById("lblTermsStatus");
+  const btnAcceptTerms = document.getElementById("btnAcceptTerms");
+  const btnBackToStep1 = document.getElementById("btnBackToStep1");
+  const modalTermsViolation = document.getElementById("modalTermsViolation");
+  const btnDismissModal = document.getElementById("btnDismissModal");
+
+  // Final Receipt
+  const recUsername = document.getElementById("recUsername");
+  const recBirthDate = document.getElementById("recBirthDate");
+  const recCountry = document.getElementById("recCountry");
+  const recPasswordMasked = document.getElementById("recPasswordMasked");
+  const btnRestartApp = document.getElementById("btnRestartApp");
+
+  // --- 1. USUARIO ---
+  txtUsername.addEventListener("input", (e) => {
+    state.username = e.target.value.trim();
+    if (state.username.length > 0 && state.username.length < 3) {
+      usernameFeedback.style.display = "block";
+    } else {
+      usernameFeedback.style.display = "none";
+    }
+    evaluateStep1Completion();
+  });
+
+  // --- 2. TRANSMISOR MORSE ---
+  let morsePressStartTime = null;
+  let morseMeterInterval = null;
+  let morseLetterTimeout = null;
+  let isMorseKeyDown = false;
+
+  function handleMorseDown(e) {
+    if (e.type === "keydown") {
+      if (e.code !== "Space" || isMorseKeyDown) return;
+      e.preventDefault();
+      isMorseKeyDown = true;
+    }
+    if (morsePressStartTime !== null) return;
+
+    if (morseLetterTimeout) {
+      clearTimeout(morseLetterTimeout);
+      morseLetterTimeout = null;
+    }
+
+    morsePressStartTime = performance.now();
+    morsePad.classList.add("active");
+    morseInvalidFeedback.style.display = "none";
+
+    morseMeterInterval = setInterval(() => {
+      const elapsed = performance.now() - morsePressStartTime;
+      morseHoldDuration.textContent = `Tiempo de pulsación: ${Math.round(elapsed)} ms [${elapsed > 250 ? "RAYA (-)" : "PUNTO (.)"}]`;
+      const fillPct = Math.min(100, (elapsed / 500) * 100);
+      morseMeterFill.style.width = fillPct + "%";
+    }, 25);
+  }
+
+  function handleMorseUp(e) {
+    if (e.type === "keyup") {
+      if (e.code !== "Space") return;
+      e.preventDefault();
+      isMorseKeyDown = false;
+    }
+    if (morsePressStartTime === null) return;
+
+    const duration = performance.now() - morsePressStartTime;
+    clearInterval(morseMeterInterval);
+    morsePressStartTime = null;
+    morsePad.classList.remove("active");
+    morseMeterFill.style.width = "0%";
+    morseHoldDuration.textContent = "Tiempo de pulsación: 0 ms";
+
+    const symbol = duration > 250 ? "-" : ".";
+    state.morseSequence += symbol;
+    lblCurrentSignal.textContent = state.morseSequence;
+
+    morseLetterTimeout = setTimeout(commitMorseLetter, 700);
+  }
+
+  function commitMorseLetter() {
+    if (!state.morseSequence) return;
+    const resolvedChar = MORSE_DICTIONARY[state.morseSequence];
+    if (resolvedChar) {
+      state.password += resolvedChar;
+      morseInvalidFeedback.style.display = "none";
+    } else {
+      morseInvalidFeedback.style.display = "block";
+    }
+    state.morseSequence = "";
+    lblCurrentSignal.textContent = "(vacío)";
+    renderPasswordDisplay();
+    evaluateStep1Completion();
+  }
+
+  function renderPasswordDisplay() {
+    lblMaskedPassword.textContent = state.password.length > 0 ? "•".repeat(state.password.length) : "(ninguno)";
+    lblPasswordLen.textContent = state.password.length;
+    if (state.password.length > 0 && state.password.length < 6) {
+      passwordLengthFeedback.style.display = "block";
+    } else {
+      passwordLengthFeedback.style.display = "none";
+    }
+  }
+
+  morsePad.addEventListener("mousedown", handleMorseDown);
+  window.addEventListener("mouseup", handleMorseUp);
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && state.currentStep === 1 && document.activeElement !== txtUsername) {
+      handleMorseDown(e);
+    }
+  });
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "Space" && state.currentStep === 1 && document.activeElement !== txtUsername) {
+      handleMorseUp(e);
+    }
+  });
+
+  btnDeleteSignal.addEventListener("click", () => {
+    if (morseLetterTimeout) {
+      clearTimeout(morseLetterTimeout);
+      morseLetterTimeout = null;
+    }
+    state.morseSequence = state.morseSequence.slice(0, -1);
+    lblCurrentSignal.textContent = state.morseSequence || "(vacío)";
+    if (state.morseSequence.length > 0) {
+      morseLetterTimeout = setTimeout(commitMorseLetter, 700);
+    }
+  });
+
+  btnDeleteChar.addEventListener("click", () => {
+    if (state.password.length > 0) {
+      state.password = state.password.slice(0, -1);
+      renderPasswordDisplay();
+      evaluateStep1Completion();
+    }
+  });
+
+  btnToggleMorseTable.addEventListener("click", () => {
+    const isVisible = morseTableRef.style.display === "block";
+    morseTableRef.style.display = isVisible ? "none" : "block";
+    btnToggleMorseTable.textContent = isVisible ? "Ver Alfabeto Morse" : "Ocultar Alfabeto Morse";
+  });
+
+  // --- 3. RULETA DE NACIMIENTO (SLOTS) ---
+  const currentYear = new Date().getFullYear();
+  let dayInterval = null;
+  let monthInterval = null;
+  let yearInterval = null;
+
+  let currentSlotDay = null;
+  let currentSlotMonth = null;
+  let currentSlotYear = null;
+
+  let dayStopped = true;
+  let monthStopped = true;
+  let yearStopped = true;
+
+  btnSpinSlots.addEventListener("click", () => {
+    slotFeedback.style.display = "none";
+    state.birthDate = { day: null, month: null, year: null };
+    evaluateStep1Completion();
+
+    dayStopped = false;
+    monthStopped = false;
+    yearStopped = false;
+
+    btnStopDay.disabled = false;
+    btnStopMonth.disabled = false;
+    btnStopYear.disabled = false;
+    btnSpinSlots.disabled = true;
+
+    clearInterval(dayInterval);
+    clearInterval(monthInterval);
+    clearInterval(yearInterval);
+
+    dayInterval = setInterval(() => {
+      currentSlotDay = Math.floor(Math.random() * 31) + 1;
+      slotDayVal.textContent = String(currentSlotDay).padStart(2, "0");
+    }, 45);
+
+    monthInterval = setInterval(() => {
+      currentSlotMonth = Math.floor(Math.random() * 12);
+      slotMonthVal.textContent = MONTH_NAMES[currentSlotMonth];
+    }, 60);
+
+    yearInterval = setInterval(() => {
+      currentSlotYear = Math.floor(Math.random() * (currentYear - 1900 + 1)) + 1900;
+      slotYearVal.textContent = currentSlotYear;
+    }, 50);
+  });
+
+  btnStopDay.addEventListener("click", () => {
+    clearInterval(dayInterval);
+    dayStopped = true;
+    btnStopDay.disabled = true;
+    checkAllSlotsHalted();
+  });
+
+  btnStopMonth.addEventListener("click", () => {
+    clearInterval(monthInterval);
+    monthStopped = true;
+    btnStopMonth.disabled = true;
+    checkAllSlotsHalted();
+  });
+
+  btnStopYear.addEventListener("click", () => {
+    clearInterval(yearInterval);
+    yearStopped = true;
+    btnStopYear.disabled = true;
+    checkAllSlotsHalted();
+  });
+
+  function checkAllSlotsHalted() {
+    if (dayStopped && monthStopped && yearStopped) {
+      btnSpinSlots.disabled = false;
+      validateSlotDate(currentSlotDay, currentSlotMonth, currentSlotYear);
+    }
+  }
+
+  function validateSlotDate(d, m, y) {
+    const candidate = new Date(y, m, d);
+    const today = new Date();
+    const isValid = candidate.getFullYear() === y &&
+                    candidate.getMonth() === m &&
+                    candidate.getDate() === d &&
+                    candidate <= today;
+
+    if (isValid) {
+      state.birthDate = { day: d, month: m, year: y };
+      slotFeedback.style.display = "none";
+    } else {
+      state.birthDate = { day: null, month: null, year: null };
+      slotFeedback.textContent = `Fecha imposible o futura (${d} de ${MONTH_NAMES[m]} de ${y}). Vuelva a girar los 3 rodillos.`;
+      slotFeedback.style.display = "block";
+      slotDayVal.textContent = "XX";
+      slotMonthVal.textContent = "INVÁLIDO";
+      slotYearVal.textContent = "XXXX";
+    }
+    evaluateStep1Completion();
+  }
+
+  // ========================================================
+  // --- 4. MÁQUINA DE GARRA DE PASAPORTES (BAD UI CLAW) ---
+  // ========================================================
+
+  function setupClawGrid() {
+    // Generar array de 210 celdas
+    const totalCells = GRID_COLS * GRID_ROWS;
+    const shuffledCountries = [...state.countries];
+
+    // Algoritmo Fisher-Yates para distribución aleatoria
+    for (let i = shuffledCountries.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledCountries[i], shuffledCountries[j]] = [shuffledCountries[j], shuffledCountries[i]];
+    }
+
+    state.countryGrid = new Array(totalCells).fill(null);
+    for (let i = 0; i < shuffledCountries.length; i++) {
+      state.countryGrid[i] = shuffledCountries[i];
+    }
+
+    // Mezclar toda la grilla para que los vacíos queden dispersos
+    for (let i = state.countryGrid.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [state.countryGrid[i], state.countryGrid[j]] = [state.countryGrid[j], state.countryGrid[i]];
+    }
+
+    // Colocar garra en una celda aleatoria
+    state.clawRow = Math.floor(Math.random() * GRID_ROWS);
+    state.clawColumn = Math.floor(Math.random() * GRID_COLS);
+    state.clawMoving = false;
+    state.capturedCountry = null;
+
+    renderWorldGridDOM();
+    updateClawTransform(false);
+  }
+
+  function renderWorldGridDOM() {
+    clawWorldGrid.innerHTML = "";
+    for (let r = 0; r < GRID_ROWS; r++) {
+      for (let c = 0; c < GRID_COLS; c++) {
+        const idx = r * GRID_COLS + c;
+        const country = state.countryGrid[idx];
+        const cell = document.createElement("div");
+        cell.className = "luggage-cell";
+        cell.id = `cell-${r}-${c}`;
+
+        if (country) {
+          cell.innerHTML = `
+            <div class="luggage-flag">${country.flag}</div>
+            <div class="luggage-name">${country.name}</div>
+            <div class="luggage-iso">${country.code}</div>
+          `;
+        } else {
+          cell.classList.add("empty");
+          cell.innerHTML = `<span style="font-size:10px; color:#555;">[VACÍO]</span>`;
+        }
+        clawWorldGrid.appendChild(cell);
+      }
+    }
+    highlightCurrentCell();
+  }
+
+  function highlightCurrentCell() {
+    document.querySelectorAll(".luggage-cell.under-claw").forEach(el => el.classList.remove("under-claw"));
+    const cell = document.getElementById(`cell-${state.clawRow}-${state.clawColumn}`);
+    if (cell) cell.classList.add("under-claw");
+  }
+
+  function updateClawTransform(animate = true) {
+    const clawX = state.clawColumn * CELL_WIDTH;
+    const clawY = state.clawRow * CELL_HEIGHT;
+
+    // Posición absoluta de la garra dentro del viewport
+    // La cámara sigue a la garra de modo que la garra quede centrada (o acotada a los límites del depósito)
+    const maxScrollX = (GRID_COLS * CELL_WIDTH) - VIEWPORT_WIDTH;
+    const maxScrollY = (GRID_ROWS * CELL_HEIGHT) - VIEWPORT_HEIGHT;
+
+    const cameraX = Math.min(Math.max(0, clawX - (VIEWPORT_WIDTH / 2) + (CELL_WIDTH / 2)), maxScrollX);
+    const cameraY = Math.min(Math.max(0, clawY - (VIEWPORT_HEIGHT / 2) + (CELL_HEIGHT / 2)), maxScrollY);
+
+    clawWorldGrid.style.transform = `translate(${-cameraX}px, ${-cameraY}px)`;
+    clawRig.style.transform = `translate(${clawX - cameraX}px, ${clawY - cameraY}px)`;
+
+    lblClawCoords.textContent = `Fila: ${state.clawRow + 1} | Columna: ${state.clawColumn + 1}`;
+    highlightCurrentCell();
+  }
+
+  function showMechanicalFX(text) {
+    fxTextOverlay.textContent = text;
+    fxTextOverlay.style.display = "block";
+    setTimeout(() => {
+      fxTextOverlay.style.display = "none";
+    }, 450);
+  }
+
+  function setClawControlsLocked(locked) {
+    state.clawMoving = locked;
+    btnClawUp.disabled = locked;
+    btnClawDown.disabled = locked;
+    btnClawLeft.disabled = locked;
+    btnClawRight.disabled = locked;
+    btnClawDrop.disabled = locked;
+  }
+
+  function moveClaw(deltaRow, deltaCol) {
+    if (state.clawMoving || state.selectedCountry !== null) return;
+
+    const newR = state.clawRow + deltaRow;
+    const newC = state.clawColumn + deltaCol;
+
+    if (newR < 0 || newR >= GRID_ROWS || newC < 0 || newC >= GRID_COLS) {
+      showMechanicalFX("LÍMITE ADUANERO");
+      return;
+    }
+
+    setClawControlsLocked(true);
+    state.clawRow = newR;
+    state.clawColumn = newC;
+    showMechanicalFX(Math.random() > 0.5 ? "CLANK" : "BRRRR");
+    updateClawTransform(true);
+
+    setTimeout(() => {
+      setClawControlsLocked(false);
+    }, 180);
+  }
+
+  // Eventos de teclado para la garra
+  window.addEventListener("keydown", (e) => {
+    if (state.currentStep !== 1 || state.selectedCountry !== null) return;
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      e.preventDefault();
+      if (e.key === "ArrowUp") moveClaw(-1, 0);
+      if (e.key === "ArrowDown") moveClaw(1, 0);
+      if (e.key === "ArrowLeft") moveClaw(0, -1);
+      if (e.key === "ArrowRight") moveClaw(0, 1);
+    }
+  });
+
+  btnClawUp.addEventListener("click", () => moveClaw(-1, 0));
+  btnClawDown.addEventListener("click", () => moveClaw(1, 0));
+  btnClawLeft.addEventListener("click", () => moveClaw(0, -1));
+  btnClawRight.addEventListener("click", () => moveClaw(0, 1));
+
+  // RADAR ADUANERO
+  btnConsultRadar.addEventListener("click", () => {
+    if (state.radarCooldown) return;
+
+    const directions = [];
+    const cr = state.clawRow;
+    const cc = state.clawColumn;
+
+    // Buscar países en vecindad inmediata (arriba, abajo, izquierda, derecha)
+    const checks = [
+      { dir: "ARRIBA ↑", r: cr - 1, c: cc },
+      { dir: "ABAJO ↓", r: cr + 1, c: cc },
+      { dir: "IZQUIERDA ←", r: cr, c: cc - 1 },
+      { dir: "DERECHA →", r: cr, c: cc + 1 },
+      { dir: "ARRIBA ↑", r: cr - 2, c: cc },
+      { dir: "ABAJO ↓", r: cr + 2, c: cc },
+      { dir: "DERECHA →", r: cr, c: cc + 2 },
+      { dir: "IZQUIERDA ←", r: cr, c: cc - 2 }
+    ];
+
+    checks.forEach(chk => {
+      if (chk.r >= 0 && chk.r < GRID_ROWS && chk.c >= 0 && chk.c < GRID_COLS) {
+        const ctry = state.countryGrid[chk.r * GRID_COLS + chk.c];
+        if (ctry) {
+          directions.push(`${ctry.name} [${chk.dir}]`);
+        }
+      }
+    });
+
+    const uniqueSignals = Array.from(new Set(directions)).slice(0, 4);
+
+    if (uniqueSignals.length > 0) {
+      radarDisplayMsg.innerHTML = `<span style="color:#ffff00;">ECOS ADUANEROS:</span> ` + uniqueSignals.join(" | ");
+    } else {
+      radarDisplayMsg.innerHTML = `<span style="color:#ffff00;">ECOS:</span> Solo celdas vacías registradas en las inmediaciones.`;
+    }
+
+    // Ocultar mensaje luego de 3 segundos
+    setTimeout(() => {
+      radarDisplayMsg.textContent = "Radar en recalibración técnica de frecuencia...";
+    }, 3000);
+
+    // Iniciar cooldown de 5 segundos
+    state.radarCooldown = true;
+    btnConsultRadar.disabled = true;
+    let cdLeft = 5;
+    const cdInterval = setInterval(() => {
+      cdLeft--;
+      if (cdLeft > 0) {
+        btnConsultRadar.textContent = `RECALIBRANDO (${cdLeft}s)...`;
+      } else {
+        clearInterval(cdInterval);
+        state.radarCooldown = false;
+        btnConsultRadar.disabled = false;
+        btnConsultRadar.textContent = "CONSULTAR RADAR";
+        radarDisplayMsg.textContent = "Radar listo para emitir pulso electroacústico.";
+      }
+    }, 1000);
+  });
+
+  // BAJAR GARRA
+  btnClawDrop.addEventListener("click", () => {
+    if (state.clawMoving || state.selectedCountry !== null) return;
+    setClawControlsLocked(true);
+    clawAdminErrorFeedback.style.display = "none";
+    showMechanicalFX("DESCENSO MECÁNICO");
+
+    // Animación de descenso de la garra (700 ms)
+    clawCable.style.height = "70px";
+
+    setTimeout(() => {
+      clawRig.classList.add("grabbing");
+
+      // 15% de probabilidad de fallo administrativo absurdo
+      const failRoll = Math.random() < 0.15;
+      const currentCellIndex = state.clawRow * GRID_COLS + state.clawColumn;
+      const foundCountry = state.countryGrid[currentCellIndex];
+
+      if (failRoll || !foundCountry) {
+        // Fallo
+        showMechanicalFX("ERROR ADUANERO");
+        clawMachineApp.classList.add("machine-shake");
+        clawAdminErrorFeedback.textContent = failRoll 
+          ? "La garra perdió el pasaporte por motivos administrativos." 
+          : "La garra bajó sobre un depósito vacío. Intente en otra posición.";
+        clawAdminErrorFeedback.style.display = "block";
+
+        // Subir garra con las manos vacías
+        setTimeout(() => {
+          clawRig.classList.remove("grabbing");
+          clawCable.style.height = "35px";
+          clawMachineApp.classList.remove("machine-shake");
+
+          setTimeout(() => {
+            setClawControlsLocked(false);
+          }, 1000);
+        }, 500);
+
+      } else {
+        // Captura exitosa
+        showMechanicalFX("EQUIPAJE APREHENDIDO");
+        state.capturedCountry = foundCountry;
+
+        setTimeout(() => {
+          clawCable.style.height = "35px";
+          setTimeout(() => {
+            clawRig.classList.remove("grabbing");
+            openInspectionModal(foundCountry);
+          }, 600);
+        }, 300);
+      }
+    }, 700);
+  });
+
+  function openInspectionModal(country) {
+    lblInspectionCaptureText.textContent = `La garra capturó: ${country.flag} ${country.name} (${country.code}). ¿Este es su país de nacimiento?`;
+    modalInspection.style.display = "flex";
+  }
+
+  // Botón: SÍ, NACÍ AHÍ
+  btnConfirmCapturedCountry.addEventListener("click", () => {
+    modalInspection.style.display = "none";
+    state.selectedCountry = state.capturedCountry;
+    state.capturedCountry = null;
+
+    lblSelectedCountry.textContent = `${state.selectedCountry.flag} ${state.selectedCountry.name} (${state.selectedCountry.code})`;
+    lblSelectedCountry.style.color = "#008000";
+
+    // Deshabilitar la máquina
+    setClawControlsLocked(true);
+    btnConsultRadar.disabled = true;
+    reopenSection.style.display = "block";
+
+    evaluateStep1Completion();
+  });
+
+  // Botón: NO, DEVOLVER VALIJA
+  btnRejectCapturedCountry.addEventListener("click", () => {
+    modalInspection.style.display = "none";
+    const returnedCountry = state.capturedCountry;
+    state.capturedCountry = null;
+
+    // Buscar una celda vacía al azar para devolver la valija
+    const emptyIndices = [];
+    state.countryGrid.forEach((item, idx) => {
+      if (item === null) emptyIndices.push(idx);
+    });
+
+    const currIdx = state.clawRow * GRID_COLS + state.clawColumn;
+    state.countryGrid[currIdx] = null; // liberamos celda original
+
+    if (emptyIndices.length > 0) {
+      const randomEmptyIdx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      state.countryGrid[randomEmptyIdx] = returnedCountry;
+    } else {
+      state.countryGrid[currIdx] = returnedCountry;
+    }
+
+    // Mover la garra a otra posición aleatoria
+    state.clawRow = Math.floor(Math.random() * GRID_ROWS);
+    state.clawColumn = Math.floor(Math.random() * GRID_COLS);
+
+    renderWorldGridDOM();
+    updateClawTransform(false);
+
+    showMechanicalFX("REORGANIZANDO");
+    radarDisplayMsg.innerHTML = `<span style="color:#ff5555;">Equipaje devuelto. La aduana ha reorganizado parcialmente el depósito.</span>`;
+
+    setTimeout(() => {
+      radarDisplayMsg.textContent = "Radar listo para emitir pulso electroacústico.";
+      setClawControlsLocked(false);
+    }, 2000);
+  });
+
+  // Botón: REAPERTURA DE FRONTERA
+  btnReopenBorder.addEventListener("click", () => {
+    state.selectedCountry = null;
+    lblSelectedCountry.textContent = "(Ninguno declarado)";
+    lblSelectedCountry.style.color = "#aa0000";
+    reopenSection.style.display = "none";
+
+    setClawControlsLocked(false);
+    btnConsultRadar.disabled = state.radarCooldown;
+    evaluateStep1Completion();
+  });
+
+  // --- EVALUACIÓN DE CONTINUAR AL PASO 2 ---
+  function evaluateStep1Completion() {
+    const isUserValid = state.username.length >= 3;
+    const isPassValid = state.password.length >= 6;
+    const isDateValid = state.birthDate.day !== null;
+    const isCountryValid = state.selectedCountry !== null;
+
+    btnContinueToStep2.disabled = !(isUserValid && isPassValid && isDateValid && isCountryValid);
+  }
+
+  btnContinueToStep2.addEventListener("click", () => {
+    state.currentStep = 2;
+    screenStep1.classList.add("hidden");
+    screenStep2.classList.remove("hidden");
+    stepProgressIndicator.textContent = "Paso 2 de 2: Términos y condiciones";
+    stepProgressIndicator.style.background = "#ff0000";
+    stepProgressIndicator.style.color = "#ffffff";
+    initTermsAudit();
+  });
+
+  btnBackToStep1.addEventListener("click", () => {
+    state.currentStep = 1;
+    stopTermsAudit();
+    screenStep2.classList.add("hidden");
+    screenStep1.classList.remove("hidden");
+    stepProgressIndicator.textContent = "Paso 1 de 2: Datos personales";
+    stepProgressIndicator.style.background = "#ffff00";
+    stepProgressIndicator.style.color = "#ff0000";
+    
+    // Conserva la selección previa en la interfaz
+    if (state.selectedCountry) {
+      lblSelectedCountry.textContent = `${state.selectedCountry.flag} ${state.selectedCountry.name} (${state.selectedCountry.code})`;
+      lblSelectedCountry.style.color = "#008000";
+      reopenSection.style.display = "block";
+      setClawControlsLocked(true);
+    }
+    evaluateStep1Completion();
+  });
+
+  // --- AUDITORÍA DE TÉRMINOS Y CONDICIONES ---
+  let termsAuditInterval = null;
+  let termsSecondsCounter = 0;
+
+  function initTermsAudit() {
+    termsScrollContainer.scrollTop = 0;
+    termsSecondsCounter = 0;
+    state.termsStartTime = performance.now();
+    state.lastScrollPosition = 0;
+    state.lastScrollTime = performance.now();
+    state.maximumReadPosition = 0;
+    state.readingInvalidated = false;
+    state.termsAccepted = false;
+
+    lblTermsTimer.textContent = "0";
+    lblTermsPercent.textContent = "0%";
+    lblTermsSpeed.textContent = "0 px/s";
+    lblTermsStatus.textContent = "Leyendo";
+    lblTermsStatus.style.color = "#00ff00";
+    btnAcceptTerms.disabled = true;
+
+    clearInterval(termsAuditInterval);
+    termsAuditInterval = setInterval(() => {
+      termsSecondsCounter++;
+      lblTermsTimer.textContent = termsSecondsCounter;
+      checkTermsAuditPass();
+    }, 1000);
+  }
+
+  function stopTermsAudit() {
+    clearInterval(termsAuditInterval);
+  }
+
+  termsScrollContainer.addEventListener("scroll", () => {
+    if (state.readingInvalidated) return;
+
+    const now = performance.now();
+    const currentTop = termsScrollContainer.scrollTop;
+    const maxScroll = termsScrollContainer.scrollHeight - termsScrollContainer.clientHeight;
+    const deltaPos = currentTop - state.lastScrollPosition;
+    const deltaTime = (now - state.lastScrollTime) / 1000;
+
+    const clientH = termsScrollContainer.clientHeight;
+    const percentRead = Math.round((currentTop / maxScroll) * 100);
+    lblTermsPercent.textContent = `${Math.min(100, Math.max(0, percentRead))}%`;
+
+    if (deltaTime > 0) {
+      const speed = Math.abs(deltaPos) / deltaTime;
+      lblTermsSpeed.textContent = `${Math.round(speed)} px/s`;
+
+      const isSpeedExcess = speed > 900;
+      const isHugeJump = (deltaPos > clientH) && (deltaTime < 0.5);
+      const isEarlyBottom = (currentTop >= maxScroll - 5) && (termsSecondsCounter < 35);
+      const isDirectDragSkip = deltaPos > (clientH * 1.5);
+
+      if (isSpeedExcess || isHugeJump || isEarlyBottom || isDirectDragSkip) {
+        triggerTermsViolation();
+        return;
+      }
+    }
+
+    if (currentTop > state.maximumReadPosition) {
+      state.maximumReadPosition = currentTop;
+    }
+
+    state.lastScrollPosition = currentTop;
+    state.lastScrollTime = now;
+
+    checkTermsAuditPass();
+  });
+
+  function triggerTermsViolation() {
+    state.readingInvalidated = true;
+    clearInterval(termsAuditInterval);
+    lblTermsStatus.textContent = "Demasiado rápido";
+    lblTermsStatus.style.color = "#ff0000";
+    modalTermsViolation.style.display = "flex";
+  }
+
+  btnDismissModal.addEventListener("click", () => {
+    modalTermsViolation.style.display = "none";
+    initTermsAudit();
+  });
+
+  function checkTermsAuditPass() {
+    if (state.readingInvalidated) return;
+
+    const maxScroll = termsScrollContainer.scrollHeight - termsScrollContainer.clientHeight;
+    const hasReachedEnd = termsScrollContainer.scrollTop >= (maxScroll - 15);
+    const hasSufficientTime = termsSecondsCounter >= 35;
+    const hasContinuousProgress = state.maximumReadPosition >= (maxScroll * 0.9);
+
+    if (hasReachedEnd && hasSufficientTime && hasContinuousProgress) {
+      lblTermsStatus.textContent = "Lectura completada";
+      lblTermsStatus.style.color = "#00ff00";
+      btnAcceptTerms.disabled = false;
+    } else {
+      btnAcceptTerms.disabled = true;
+    }
+  }
+
+  // --- FINALIZACIÓN Y PANTALLA 3 ---
+  btnAcceptTerms.addEventListener("click", () => {
+    state.termsAccepted = true;
+    stopTermsAudit();
+    screenStep2.classList.add("hidden");
+    screenStep3.classList.remove("hidden");
+
+    stepProgressIndicator.textContent = "Proceso Concluido";
+    stepProgressIndicator.style.background = "#00aa00";
+    stepProgressIndicator.style.color = "#ffffff";
+
+    recUsername.textContent = state.username;
+    recBirthDate.textContent = `${String(state.birthDate.day).padStart(2, "0")} de ${MONTH_NAMES[state.birthDate.month]} de ${state.birthDate.year}`;
+    recCountry.textContent = `${state.selectedCountry.flag} ${state.selectedCountry.name} (${state.selectedCountry.code})`;
+    recPasswordMasked.textContent = "•".repeat(state.password.length);
+  });
+
+  // --- REINICIO COMPLETO DE LA APLICACIÓN ---
+  btnRestartApp.addEventListener("click", () => {
+    state.currentStep = 1;
+    state.username = "";
+    state.morseSequence = "";
+    state.password = "";
+    state.birthDate = { day: null, month: null, year: null };
+    state.selectedCountry = null;
+    state.capturedCountry = null;
+    state.termsStartTime = null;
+    state.lastScrollPosition = 0;
+    state.lastScrollTime = null;
+    state.maximumReadPosition = 0;
+    state.readingInvalidated = false;
+    state.termsAccepted = false;
+
+    txtUsername.value = "";
+    usernameFeedback.style.display = "none";
+    lblCurrentSignal.textContent = "(vacío)";
+    lblMaskedPassword.textContent = "(ninguno)";
+    lblPasswordLen.textContent = "0";
+    morseInvalidFeedback.style.display = "none";
+    passwordLengthFeedback.style.display = "none";
+
+    slotDayVal.textContent = "--";
+    slotMonthVal.textContent = "--";
+    slotYearVal.textContent = "----";
+    slotFeedback.style.display = "none";
+    btnStopDay.disabled = true;
+    btnStopMonth.disabled = true;
+    btnStopYear.disabled = true;
+    btnSpinSlots.disabled = false;
+
+    lblSelectedCountry.textContent = "(Ninguno declarado)";
+    lblSelectedCountry.style.color = "#aa0000";
+    reopenSection.style.display = "none";
+    clawAdminErrorFeedback.style.display = "none";
+
+    // Reiniciar y volver a mezclar valijas de la garra
+    setupClawGrid();
+    setClawControlsLocked(false);
+    btnConsultRadar.disabled = false;
+    radarDisplayMsg.textContent = "Radar listo para emitir pulso electroacústico.";
+
+    btnContinueToStep2.disabled = true;
+
+    screenStep3.classList.add("hidden");
+    screenStep1.classList.remove("hidden");
+    stepProgressIndicator.textContent = "Paso 1 de 2: Datos personales";
+    stepProgressIndicator.style.background = "#ffff00";
+    stepProgressIndicator.style.color = "#ff0000";
+  });
+
+  // Inicialización de la máquina de garra al cargar el documento
+  setupClawGrid();
+</script>
+</body>
+</html>
