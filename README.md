@@ -8,4 +8,4 @@ Repositorio del curso Introducción a la ingeniería de software asistida por In
 |---------|---------|--------|
 | TP 1 | [tp1/](tp1/) | resuelto |
 | TP 2 | [tp2/](tp2/) | resuelto |
-| Trabajo Práctico Final | [tp-final/](tp-final/) | en blanco |
+| Trabajo Práctico Final | [tp-final/](https://github.com/tomasf10/grupo8-iisaia) | en progreso |
