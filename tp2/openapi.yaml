@@ -1,0 +1,374 @@
+openapi: 3.1.0
+info:
+  title: Banking Cards API
+  version: 1.0.0
+  description: API REST para la gestión de tarjetas bancarias de crédito y débito.
+
+paths:
+  /cards:
+    get:
+      summary: Listar tarjetas con filtros y paginación
+      description: |
+        Retorna una lista paginada de tarjetas (crédito y débito) asociadas a cuentas bancarias.
+        Permite combinar múltiples filtros de búsqueda. Por motivos de seguridad (PCI-DSS),
+        no se permite la búsqueda por el número completo de tarjeta (PAN), únicamente por sus últimos 4 dígitos.
+      parameters:
+        - name: account_id
+          in: query
+          required: false
+          description: Filtra por el identificador único de la cuenta asociada.
+          schema:
+            type: string
+            format: uuid
+            example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+
+        - name: card_type
+          in: query
+          required: false
+          description: Filtra por el tipo de tarjeta.
+          schema:
+            $ref: '#/components/schemas/CardType'
+
+        - name: status
+          in: query
+          required: false
+          description: Filtra por el estado actual de la tarjeta.
+          schema:
+            $ref: '#/components/schemas/CardStatus'
+
+        - name: last_four_digits
+          in: query
+          required: false
+          description: Filtra por los últimos 4 dígitos de la tarjeta.
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+            minLength: 4
+            maxLength: 4
+            example: "1234"
+
+        - name: expiration_from
+          in: query
+          required: false
+          description: Fecha de vencimiento mínima (inclusive) para filtrar (formato YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+            example: "2026-01-01"
+
+        - name: expiration_to
+          in: query
+          required: false
+          description: Fecha de vencimiento máxima (inclusive) para filtrar (formato YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+            example: "2030-12-31"
+
+        - name: page
+          in: query
+          required: false
+          description: Número de página a recuperar (base 1).
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            example: 1
+
+        - name: page_size
+          in: query
+          required: false
+          description: Cantidad máxima de tarjetas por página.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+            example: 20
+
+      responses:
+        '200':
+          description: Lista paginada de tarjetas obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCardsResponse'
+        '400':
+          description: Parámetros de consulta inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Emitir una nueva tarjeta
+      description: Crea una nueva tarjeta vinculada a una cuenta. El servidor genera el ID, número enmascarado y fecha de vencimiento.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCardRequest'
+      responses:
+        '201':
+          description: Tarjeta creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+        '400':
+          description: Datos obligatorios faltantes o solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cards/{cardId}:
+    get:
+      summary: Obtener detalle de una tarjeta
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          description: Identificador único de la tarjeta
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle de la tarjeta obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+        '404':
+          description: Tarjeta no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cards/{cardId}/status:
+    patch:
+      summary: Actualizar estado de una tarjeta
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          description: Identificador único de la tarjeta
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCardStatusRequest'
+      responses:
+        '200':
+          description: Estado actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+        '400':
+          description: Estado provisto inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tarjeta no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # --- Enumeraciones ---
+    CardType:
+      type: string
+      enum: [CREDIT, DEBIT]
+
+    CardStatus:
+      type: string
+      enum: [ACTIVE, BLOCKED, EXPIRED]
+
+    # --- Paginación ---
+    PaginatedCardsResponse:
+      type: object
+      required:
+        - items
+        - page
+        - page_size
+        - total_items
+        - total_pages
+      properties:
+        items:
+          type: array
+          description: Lista de tarjetas correspondiente a la página solicitada.
+          items:
+            $ref: '#/components/schemas/CardResponse'
+        page:
+          type: integer
+          minimum: 1
+          description: Número de página actual devuelta.
+          example: 1
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Cantidad de elementos por página aplicados a la consulta.
+          example: 20
+        total_items:
+          type: integer
+          minimum: 0
+          description: Cantidad total de tarjetas que coinciden con los filtros aplicados.
+          example: 45
+        total_pages:
+          type: integer
+          minimum: 0
+          description: Cantidad total de páginas disponibles según el total de ítems y page_size.
+          example: 3
+
+    # --- Schemas Base ---
+    BaseCardResponse:
+      type: object
+      required:
+        - id
+        - card_number
+        - card_type
+        - status
+        - expiration_date
+        - account_id
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        card_number:
+          type: string
+          pattern: '^\*{4} \*{4} \*{4} \d{4}$'
+          example: "**** **** **** 1234"
+        card_type:
+          $ref: '#/components/schemas/CardType'
+        status:
+          $ref: '#/components/schemas/CardStatus'
+          example: ACTIVE
+        expiration_date:
+          type: string
+          format: date
+          example: "2029-12-31"
+        account_id:
+          type: string
+          format: uuid
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+
+    # --- Schemas de Respuesta Polimórficos ---
+    CreditCardResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseCardResponse'
+        - type: object
+          required:
+            - credit_limit
+            - available_credit
+          properties:
+            card_type:
+              const: CREDIT
+            credit_limit:
+              type: number
+              minimum: 0
+              example: 500000.00
+            available_credit:
+              type: number
+              example: 320000.50
+
+    DebitCardResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseCardResponse'
+        - type: object
+          required:
+            - available_balance
+          properties:
+            card_type:
+              const: DEBIT
+            available_balance:
+              type: number
+              example: 14520.75
+
+    CardResponse:
+      oneOf:
+        - $ref: '#/components/schemas/CreditCardResponse'
+        - $ref: '#/components/schemas/DebitCardResponse'
+      discriminator:
+        propertyName: card_type
+        mapping:
+          CREDIT: '#/components/schemas/CreditCardResponse'
+          DEBIT: '#/components/schemas/DebitCardResponse'
+
+    # --- Schemas de Solicitud (Input) ---
+    CreateCreditCardRequest:
+      type: object
+      required:
+        - card_type
+        - account_id
+        - credit_limit
+      properties:
+        card_type:
+          const: CREDIT
+        account_id:
+          type: string
+          format: uuid
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        credit_limit:
+          type: number
+          minimum: 0
+          example: 500000.00
+
+    CreateDebitCardRequest:
+      type: object
+      required:
+        - card_type
+        - account_id
+      properties:
+        card_type:
+          const: DEBIT
+        account_id:
+          type: string
+          format: uuid
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+
+    CreateCardRequest:
+      oneOf:
+        - $ref: '#/components/schemas/CreateCreditCardRequest'
+        - $ref: '#/components/schemas/CreateDebitCardRequest'
+      discriminator:
+        propertyName: card_type
+        mapping:
+          CREDIT: '#/components/schemas/CreateCreditCardRequest'
+          DEBIT: '#/components/schemas/CreateDebitCardRequest'
+
+    UpdateCardStatusRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/CardStatus'
+          example: BLOCKED
+
+    # --- Error Model ---
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: "INVALID_PARAMETERS"
+        message:
+          type: string
+          example: "El parámetro last_four_digits debe contener exactamente 4 dígitos numéricos."
